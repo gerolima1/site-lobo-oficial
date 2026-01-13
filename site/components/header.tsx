@@ -1,11 +1,11 @@
-﻿"use client"
+"use client"
 
-import { Gamepad2, LogOut, LayoutDashboard } from "lucide-react"
+import { Gamepad2, LayoutDashboard } from "lucide-react"
 import Link from "next/link"
-import { signIn, signOut, useSession } from "next-auth/react" // ✨ Importamos as funções de login
+import { useSession } from "next-auth/react"
 
 export function Header() {
-  const { data: session } = useSession() // ✨ Isso verifica se o usuário está logado
+  const { data: session } = useSession()
 
   return (
     <header className="sticky top-0 z-50 w-full glass-effect border-b border-primary/20">
@@ -21,7 +21,7 @@ export function Header() {
             <span className="text-xl font-bold gradient-text">BOT FILAS</span>
           </Link>
 
-          {/* Navigation - Escondido no Mobile */}
+          {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
               Recursos
@@ -29,45 +29,24 @@ export function Header() {
             <a href="#pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
               Preços
             </a>
+            {session && (
+              <Link href="/dashboard" className="text-sm text-primary font-medium flex items-center gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                Painel
+              </Link>
+            )}
           </nav>
 
-          {/* Área de Login Dinâmica */}
+          {/* Área do Usuário (Sem o botão de login duplicado) */}
           <div className="flex items-center gap-4">
-            {session ? (
-              /* 🟢 SE ESTIVER LOGADO: Mostra Foto/Nome e Botão Sair */
-              <div className="flex items-center gap-3">
-                <Link 
-                  href="/dashboard" 
-                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  Painel
-                </Link>
-                
-                <div className="h-8 w-8 rounded-full border border-primary/50 overflow-hidden">
-                  <img 
-                    src={session.user?.image || ""} 
-                    alt="Perfil" 
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-
-                <button 
-                  onClick={() => signOut()}
-                  className="p-2 hover:bg-red-500/10 rounded-full text-red-400 transition-colors"
-                  title="Sair"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
+            {session && (
+              <div className="h-8 w-8 rounded-full border border-primary/50 overflow-hidden">
+                <img 
+                  src={session.user?.image || ""} 
+                  alt="Perfil" 
+                  className="h-full w-full object-cover"
+                />
               </div>
-            ) : (
-              /* 🔴 SE NÃO ESTIVER LOGADO: Mostra o botão de Login */
-              <button 
-                onClick={() => signIn('discord')}
-                className="neon-button rounded-full text-sm px-6 py-2 transition-all hover:scale-105"
-              >
-                Login com Discord
-              </button>
             )}
           </div>
         </div>

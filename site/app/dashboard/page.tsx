@@ -10,7 +10,7 @@ export default function DashboardPage() {
             <p className="text-foreground/60">Gerencie seus bots de Free Fire</p>
           </div>
           <div className="glass-effect p-2 px-4 rounded-full border border-primary/30">
-            <span className="text-sm">Conectado como Usu·rio</span>
+            <span className="text-sm">Conectado como Usu√°rio</span>
           </div>
         </header>
 
@@ -33,7 +33,7 @@ export default function DashboardPage() {
               <span className="text-2xl">???</span>
             </div>
             <h3 className="text-xl font-semibold mb-2">Servidores</h3>
-            <p className="text-sm text-foreground/50 mb-4">Gerencie onde o bot est·.</p>
+            <p className="text-sm text-foreground/50 mb-4">Gerencie onde o bot est√°.</p>
             <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm">
               Ver Servidores
             </button>

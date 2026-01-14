@@ -1,8 +1,8 @@
 "use client"
 
-import { Gamepad2, LayoutDashboard } from "lucide-react"
+import { Gamepad2, LayoutDashboard, LogIn } from "lucide-react"
 import Link from "next/link"
-import { useSession } from "next-auth/react"
+import { useSession, signIn } from "next-auth/react"
 
 export function Header() {
   const { data: session } = useSession()
@@ -37,16 +37,26 @@ export function Header() {
             )}
           </nav>
 
-          {/* Área do Usuário (Sem o botão de login duplicado) */}
+          {/* Área do Usuário */}
           <div className="flex items-center gap-4">
-            {session && (
-              <div className="h-8 w-8 rounded-full border border-primary/50 overflow-hidden">
+            {session ? (
+              // Se estiver Logado: Mostra Foto
+              <div className="h-10 w-10 rounded-full border-2 border-primary/50 overflow-hidden shadow-[0_0_10px_rgba(var(--primary),0.3)]">
                 <img 
                   src={session.user?.image || ""} 
                   alt="Perfil" 
                   className="h-full w-full object-cover"
                 />
               </div>
+            ) : (
+              // Se estiver Deslogado: Mostra Botão de Login
+              <button
+                onClick={() => signIn("discord")}
+                className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/50 px-4 py-2 rounded-full text-sm font-bold transition-all hover:scale-105 active:scale-95"
+              >
+                <LogIn className="h-4 w-4" />
+                Login via Discord
+              </button>
             )}
           </div>
         </div>

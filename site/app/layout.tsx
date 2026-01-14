@@ -1,10 +1,10 @@
-﻿import type React from "react"
+import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Rajdhani } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
-import { Header } from "@/components/header" // Adicionamos o Header aqui
-import AuthProvider from "@/components/auth-provider" // Vamos criar este arquivo no próximo passo
+import { Header } from "@/components/header"
+import AuthProvider from "@/components/auth-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 const rajdhani = Rajdhani({ weight: ["400", "500", "700"], subsets: ["latin"] })
@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className={`${inter.className} antialiased`}>
-        {/* O AuthProvider deve envolver todo o conteúdo */}
+        {/* O AuthProvider permite que o login funcione em todo o site */}
         <AuthProvider>
           <Header />
           {children}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { neon } from "@neondatabase/serverless";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Importe as opções!
+import { authOptions } from "@/app/api/auth/callback/route"; // Importe as opções!
 
 export async function GET() {
   try {

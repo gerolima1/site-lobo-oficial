@@ -3,36 +3,58 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { LayoutDashboard, Bot, Server, Settings, ExternalLink, Loader2 } from "lucide-react"
+import { LayoutDashboard, Bot, Server, Settings, ExternalLink, Loader2, AlertCircle } from "lucide-react"
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [bots, setBots] = useState([])
+  
+  // Estados para os dados do banco
+  const [botData, setBotData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  // 🛡️ Proteção de Rota: Se não estiver logado, volta para a Home
+  // 🛡️ Proteção de Rota
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/")
     }
   }, [status, router])
 
-  // 🚀 Aqui buscaremos os bots do banco futuramente
-  // Por enquanto, vamos simular a busca para montar o layout
+  // 📡 Busca os dados reais da nossa API
   useEffect(() => {
-    if (session) {
-      // Simulação de delay de carregamento
-      setTimeout(() => {
-        setLoading(false)
-      }, 1000)
+    const fetchBotData = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch('/api/get-token')
+          const data = await response.json()
+          
+          if (response.ok && data.token) {
+            setBotData(data)
+          } else {
+            setBotData(null) // Nenhum bot encontrado
+          }
+        } catch (err) {
+          console.error("Erro ao buscar bot:", err)
+          setError(true)
+        } finally {
+          setLoading(false)
+        }
+      }
     }
-  }, [session])
+
+    if (status === "authenticated") {
+      fetchBotData()
+    }
+  }, [session, status])
 
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-12 w-12 text-primary animate-spin" />
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-foreground/50 animate-pulse">Consultando banco de dados...</p>
+        </div>
       </div>
     )
   }
@@ -41,95 +63,87 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         
-        {/* Header do Dashboard */}
+        {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <LayoutDashboard className="h-5 w-5 text-primary" />
               <span className="text-xs font-bold text-primary uppercase tracking-widest">Painel Administrativo</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black gradient-text">Bem-vindo, {session?.user?.name?.split(' ')[0]}!</h1>
-            <p className="text-foreground/50 mt-1">Gerencie sua infraestrutura de bots e filas.</p>
+            <h1 className="text-4xl md:text-5xl font-black gradient-text">Olá, {session?.user?.name?.split(' ')[0]}!</h1>
+            <p className="text-foreground/50 mt-1">Aqui está o status da sua infraestrutura.</p>
           </div>
 
           <div className="flex items-center gap-4 glass-effect p-2 pr-6 rounded-full border border-white/10 shadow-xl">
-            <img 
-              src={session?.user?.image || ""} 
-              alt="Avatar" 
-              className="h-10 w-10 rounded-full border border-primary/50"
-            />
+            <img src={session?.user?.image || ""} alt="Avatar" className="h-10 w-10 rounded-full border border-primary/50" />
             <div className="flex flex-col">
               <span className="text-sm font-bold text-white leading-none">{session?.user?.name}</span>
-              <span className="text-[10px] text-green-400 font-bold uppercase tracking-tighter">Conta Verificada</span>
+              <span className="text-[10px] text-primary font-bold uppercase tracking-tighter">Membro VIP</span>
             </div>
           </div>
         </header>
 
-        {/* Grid de Conteúdo */}
+        {/* Conteúdo Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Card: Status do Bot */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <div className="group glass-effect p-8 rounded-[2rem] border border-white/5 hover:border-primary/30 transition-all duration-500 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Bot className="h-20 w-20 text-primary" />
-              </div>
-              
-              <div className="relative z-10">
-                <div className="h-12 w-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20">
-                  <Bot className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">Bot Principal</h3>
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm text-green-400 font-medium">Lobo Ativo</span>
-                </div>
-                <button className="flex items-center justify-center gap-2 w-full py-4 bg-white/5 hover:bg-primary hover:text-black rounded-xl text-sm font-bold transition-all duration-300">
-                  <Settings className="h-4 w-4" /> Configurar Fila
-                </button>
-              </div>
-            </div>
-
-            <div className="group glass-effect p-8 rounded-[2rem] border border-white/5 hover:border-secondary/30 transition-all duration-500 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Server className="h-20 w-20 text-secondary" />
-              </div>
-
-              <div className="relative z-10">
-                <div className="h-12 w-12 bg-secondary/10 rounded-2xl flex items-center justify-center mb-6 border border-secondary/20">
-                  <Server className="h-6 w-6 text-secondary" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">Servidores</h3>
-                <p className="text-sm text-foreground/50 mb-6 leading-relaxed">O bot está operando em <span className="text-white font-bold">12 servidores</span> ativos no momento.</p>
-                <button className="flex items-center justify-center gap-2 w-full py-4 bg-white/5 hover:bg-secondary hover:text-black rounded-xl text-sm font-bold transition-all duration-300">
-                  <ExternalLink className="h-4 w-4" /> Ver Servidores
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Sidebar de Informações */}
-          <div className="glass-effect p-8 rounded-[2rem] border border-white/5">
-            <h4 className="text-lg font-bold mb-6 flex items-center gap-2">
-              <span className="h-2 w-2 bg-primary rounded-full" />
-              Logs de Atividade
-            </h4>
-            <div className="space-y-6">
-              {[1, 2, 3].map((item) => (
-                <div key={item} className="flex gap-4 border-l-2 border-white/5 pl-4 hover:border-primary/50 transition-colors">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-foreground/40 font-mono">14:20:05</span>
-                    <span className="text-sm text-foreground/80">Token atualizado com sucesso via painel.</span>
+          <div className="lg:col-span-2 space-y-6">
+            {botData ? (
+              /* Se existir um BOT no banco */
+              <div className="group glass-effect p-8 rounded-[2.5rem] border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent relative overflow-hidden">
+                <div className="relative z-10">
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="h-14 w-14 bg-primary/20 rounded-2xl flex items-center justify-center border border-primary/30">
+                      <Bot className="h-7 w-7 text-primary" />
+                    </div>
+                    <div className="px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-[10px] font-black text-green-500 uppercase">Hospedado</span>
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-1">Seu Lobo Ativo</h3>
+                  <p className="text-sm text-foreground/50 mb-6 font-mono">Token: {botData.token.substring(0, 20)}****************</p>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <button className="flex items-center justify-center gap-2 py-4 bg-primary text-black rounded-2xl text-sm font-bold hover:scale-[1.02] transition-all">
+                      <Settings className="h-4 w-4" /> Painel de Controle
+                    </button>
+                    <button className="flex items-center justify-center gap-2 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-sm font-bold transition-all">
+                      <Server className="h-4 w-4" /> Servidores
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            <div className="mt-10 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-              <p className="text-[10px] text-primary font-bold uppercase mb-2">Dica Pro</p>
-              <p className="text-xs text-foreground/60 leading-relaxed">Mantenha seu token em sigilo. Nunca compartilhe a chave de acesso com terceiros.</p>
+              </div>
+            ) : (
+              /* Se NÃO existir bot ou der erro */
+              <div className="glass-effect p-12 rounded-[2.5rem] border border-dashed border-white/10 text-center">
+                <AlertCircle className="h-12 w-12 text-foreground/20 mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-2">Nenhum Bot Conectado</h3>
+                <p className="text-foreground/50 mb-8 max-w-sm mx-auto">Você ainda não vinculou um token de bot à sua conta. Vá até a página inicial para conectar.</p>
+                <button 
+                  onClick={() => router.push('/')}
+                  className="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-full text-sm font-bold transition-all"
+                >
+                  Conectar agora
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <div className="glass-effect p-8 rounded-[2.5rem] border border-white/5">
+              <h4 className="text-sm font-bold text-foreground/40 uppercase tracking-widest mb-6">Logs do Sistema</h4>
+              <div className="space-y-6">
+                <div className="border-l-2 border-primary/30 pl-4 py-1">
+                  <p className="text-xs text-foreground/30 mb-1">Hoje às 14:20</p>
+                  <p className="text-sm text-white/80 font-medium">Sessão iniciada via Discord</p>
+                </div>
+                <div className="border-l-2 border-white/10 pl-4 py-1 opacity-50">
+                  <p className="text-xs text-foreground/30 mb-1">Ontem</p>
+                  <p className="text-sm text-white/80 font-medium">Nenhuma atividade registrada</p>
+                </div>
+              </div>
             </div>
           </div>
 

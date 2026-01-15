@@ -1,7 +1,6 @@
 import NextAuth from "next-auth"
 import DiscordProvider from "next-auth/providers/discord"
 
-// 1. Criamos uma constante EXPORTÁVEL com as configurações
 export const authOptions = {
   providers: [
     DiscordProvider({
@@ -11,6 +10,19 @@ export const authOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
+  // Força o uso de cookies seguros em produção (Vercel)
+  useSecureCookies: process.env.NODE_ENV === "production",
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === "production" ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   callbacks: {
     async session({ session, token }: any) {
       if (session.user) {
@@ -19,9 +31,9 @@ export const authOptions = {
       return session;
     },
   },
+  // Ajuda a evitar o erro de mismatch na Vercel
+  trustHost: true,
 }
 
-// 2. Passamos essa constante para o NextAuth
 const handler = NextAuth(authOptions)
-
 export { handler as GET, handler as POST }

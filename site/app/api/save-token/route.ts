@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; 
+import { authOptions } from "@/app/api/auth/callback/route"; 
 
 export async function POST(req: Request) {
   try {
@@ -45,3 +45,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Erro interno no servidor." }, { status: 500 });
   }
 }
+

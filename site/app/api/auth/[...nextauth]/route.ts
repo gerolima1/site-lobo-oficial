@@ -10,19 +10,9 @@ export const authOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  // Força o uso de cookies seguros em produção (Vercel)
-  useSecureCookies: process.env.NODE_ENV === "production",
-  cookies: {
-    sessionToken: {
-      name: process.env.NODE_ENV === "production" ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
-  },
+  // No Railway, force sempre true se estiver usando o domínio .up.railway.app
+  useSecureCookies: true, 
+  trustHost: true,
   callbacks: {
     async session({ session, token }: any) {
       if (session.user) {
@@ -31,8 +21,8 @@ export const authOptions = {
       return session;
     },
   },
-  // Ajuda a evitar o erro de mismatch na Vercel
-  trustHost: true,
+  // Removemos a configuração manual de 'cookies' para deixar o NextAuth
+  // gerenciar os nomes automaticamente baseado no HTTPS.
 }
 
 const handler = NextAuth(authOptions)
